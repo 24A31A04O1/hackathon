@@ -1,0 +1,74 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Emergency Alerts</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #f4f6f9;
+      padding: 30px;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      margin-bottom: 15px;
+      border-radius: 10px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    }
+
+    .yes {
+      background: #2e7d32;
+      color: white;
+      padding: 8px 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .no {
+      background: #c62828;
+      color: white;
+      padding: 8px 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+<h2>🩸 Emergency Blood Alerts</h2>
+
+{% for alert in alerts %}
+  <div class="card">
+    <p><b>Patient:</b> {{ alert.patient_name }} ({{ alert.patient_age }} yrs)</p>
+    <p><b>Blood Group Needed:</b> {{ alert.blood_group }}</p>
+    <p><b>Urgency:</b> {{ alert.urgency_time }}</p>
+
+    {% if alert.id in response_map %}
+      <!-- Already responded -->
+      <div style="float:right; font-weight:bold;">
+        {% if response_map[alert.id] == "YES" %}
+          ✅ Responded: YES
+        {% else %}
+          ❌ Responded: NO
+        {% endif %}
+      </div>
+    {% else %}
+      <!-- Not responded yet -->
+      <form method="POST" action="/respond/{{ alert.id }}">
+        <button class="yes" name="response" value="YES">Yes</button>
+        <button class="no" name="response" value="NO">No</button>
+      </form>
+    {% endif %}
+
+    <div style="clear:both;"></div>
+  </div>
+{% endfor %}
+
+
+</body>
+</html>
