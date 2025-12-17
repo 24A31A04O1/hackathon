@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Register</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .card {
+      background: white;
+      padding: 30px;
+      width: 420px;
+      border-radius: 10px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    /* Flash messages */
+    .msg {
+      padding: 10px;
+      margin-bottom: 15px;
+      border-radius: 6px;
+      font-size: 14px;
+      text-align: center;
+    }
+    .msg.success {
+      background: #d4edda;
+      color: #155724;
+    }
+    .msg.error {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    select:disabled {
+      background: #f0f0f0;
+      cursor: not-allowed;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #2a5298;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 15px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #1e3c72;
+    }
+
+    p {
+      text-align: center;
+      margin-top: 15px;
+    }
+
+    a {
+      color: #2a5298;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="card">
+  <h2>Create Account</h2>
+
+  <!-- 🔔 Flash messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="msg {{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <form method="POST">
+    <input type="text" name="name" placeholder="Full Name" required>
+    <input type="email" name="email" placeholder="Email" required>
+    <input type="password" name="password" placeholder="Password" required>
+    <input type="text" name="phone" placeholder="Phone Number" required>
+
+    <select id="district" name="district" required>
+      <option value="">Select District</option>
+    </select>
+
+    <select id="constituency" name="constituency" required disabled>
+      <option value="">Select Constituency</option>
+    </select>
+
+    <select id="place" name="place" required disabled>
+      <option value="">Select Place</option>
+    </select>
+    <input type="number" name="age" placeholder="Age" min="18" max="65" required>
+
+<select name="blood_group" required>
+  <option value="">Select Blood Group</option>
+  <option>A+</option>
+  <option>A-</option>
+  <option>B+</option>
+  <option>B-</option>
+  <option>AB+</option>
+  <option>AB-</option>
+  <option>O+</option>
+  <option>O-</option>
+</select>
+
+
+    <button type="submit">Register</button>
+  </form>
+
+  <p>Already registered? <a href="/login">Login</a></p>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  const district = document.getElementById("district");
+  const constituency = document.getElementById("constituency");
+  const place = document.getElementById("place");
+
+  /* Load districts */
+  fetch("/api/districts")
+    .then(res => res.json())
+    .then(data => {
+      data.forEach(d => {
+        district.add(new Option(d.name, d.id));
+      });
+    })
+    .catch(err => console.error("District fetch error:", err));
+
+  /* District change */
+  district.addEventListener("change", function () {
+    constituency.innerHTML = "<option value=''>Select Constituency</option>";
+    place.innerHTML = "<option value=''>Select Place</option>";
+    constituency.disabled = true;
+    place.disabled = true;
+
+    if (!this.value) return;
+
+    fetch(`/api/constituencies/${this.value}`)
+      .then(res => res.json())
+      .then(data => {
+        data.forEach(c => {
+          constituency.add(new Option(c.name, c.id));
+        });
+        constituency.disabled = false;
+      });
+  });
+
+  /* Constituency change */
+  constituency.addEventListener("change", function () {
+    place.innerHTML = "<option value=''>Select Place</option>";
+    place.disabled = true;
+
+    if (!this.value) return;
+
+    fetch(`/api/places/${this.value}`)
+      .then(res => res.json())
+      .then(data => {
+        data.forEach(p => {
+          place.add(new Option(p.name, p.id));
+        });
+        place.disabled = false;
+      });
+  });
+
+});
+</script>
+
+</body>
+</html>
